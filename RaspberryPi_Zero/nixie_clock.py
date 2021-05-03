@@ -31,54 +31,50 @@ def main():
 def on_push(channel):
     global mode
     print ("Button Pushed.")
-    if mode != -1:
-        thread.stop()
     if mode < 1:
         mode += 1
     else:
         mode = 0
+
+#     sleep(1)
+
     # モードに応じて呼び出す
-    thread = MyThread(mode)
+    if mode == 0:
+        thread = threading.Thread(target = test)
+    elif mode == 1:
+        thread = threading.Thread(target = get_current_time)
+    else:
+        return
+    thread.setDaemon(True)
     thread.start()
-
-class MyThread(threading.Thread):
-    def __init__(self, i):
-        super(MyThread, self).__init__()
-        self.i = i
-        self.stop_event = threading.Event()
-        self.setDaemon(True)
-        
-    def stop(self):
-        self.stop_event.set()
-
-    def run(self):
-        print ('START {}'.format(self.i))
-        while not self.stop_event.is_set():
-            if self.i == 0:
-                test()
-            elif self.i == 1:
-                get_current_time()
-            time.sleep(0.5)
 
 def test():
     global current_time
+    global mode
     
     current_time =["R", "R", "R", "R", "R", "R", "R", "R", "\n"]
     digit = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "R", "L"]
 
-    for c in digit:
-        current_time[6] = c
-        print(current_time)
+    while mode == 0:
+        for c in digit:
+            if mode != 0:
+                break
+            current_time[6] = c
+            print(current_time)
+            sleep(0.5)
 
 def get_current_time():
     global current_time
+    global mode
 
-    dt_now = datetime.datetime.now()
-    current_time = list(dt_now.strftime('%H%M%S'))
-    current_time.insert(2,"R")
-    current_time.insert(5,"R")
-    current_time.insert(8,"\n")
-    print(current_time)
+    while mode == 1:
+        dt_now = datetime.datetime.now()
+        current_time = list(dt_now.strftime('%H%M%S'))
+        current_time.insert(2,"R")
+        current_time.insert(5,"R")
+        current_time.insert(8,"\n")
+        print(current_time)
+        sleep(0.5)
 
 def serial_send():
     ser = serial.Serial('/dev/ttyAMA0',57600) # 115200
