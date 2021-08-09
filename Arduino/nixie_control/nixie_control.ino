@@ -6,15 +6,16 @@ SoftwareSerial mySerial(10, 11); // RX, TX
 String data;
 
 //nixie
-#define SRCLK_A 5//shift register clock D5
-#define SER_A 3//serial input D3
-#define RCLK_A 17//storage register clock A3
+#define SRCLK_A 2//shift register clock D2
+#define SER_A 4//serial input D4
+#define RCLK_A 3//storage register clock D3
 
 #define SRCLK_C 7 //shift register clock D7
-#define SER_C 9//serial input D9
-#define RCLK_C 8//storage register clock D8
+#define SER_C 5//serial input D5
+#define RCLK_C 6//storage register clock D6
 
-int time[8] = {10, 11, 0, 1, 2, 3, 11, 10};
+// 2^x slaveのQhを下位ビットとして出力するため、指定した数+1が表示される
+int time[8] = {0, 1, 2, 8, 9, 10, 11, 12};
 int time_m = 0;
 
 void serial_receive(){
@@ -28,7 +29,12 @@ void serial_receive(){
     for(int i = 0; i < 8; i++){
 
       if(isDigit(data[i])){
-        time[i] = int(data[i] - '0');
+        if (data[i] == '0'){
+          time[i] = 9;
+        }
+        else{
+          time[i] = int(data[i] - '1');
+        }
       }
       else if(data[i] == 'R'){
         time[i] = 10;
@@ -36,22 +42,16 @@ void serial_receive(){
       else if(data[i] == 'L'){
         time[i] = 11;      
       }
-      /*
-      if(time[i] == 0){
-        time[i] = 12;
-      }
-      */
-
     }
   }
 
-  /*
+  
   for(int i = 0; i < 8; i++){
     Serial.print(time[i]);
     Serial.print(",");
   }
   Serial.println("");
-  */
+  
     
 }
 
@@ -105,7 +105,7 @@ void loop()
     
     //アノード、点灯管指定
     digitalWrite(RCLK_A, LOW);
-    shiftOut(SER_A, SRCLK_A, LSBFIRST, 1<<j);
+    shiftOut(SER_A, SRCLK_A, LSBFIRST, 1<<(7-j));
     digitalWrite(RCLK_A, HIGH);
 
     //delay(1);//点灯時間
