@@ -36,11 +36,14 @@ void serial_receive(){
           time[i] = int(data[i] - '1');
         }
       }
-      else if(data[i] == 'R'){
+      else if(data[i] == 'L'){
         time[i] = 10;
       }
-      else if(data[i] == 'L'){
+      else if(data[i] == 'R'){
         time[i] = 11;      
+      }
+      else if(data[i] == 'N'){
+        time[i] = 12;
       }
     }
   }
