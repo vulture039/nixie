@@ -12,7 +12,7 @@ from time import sleep
 
 current_time = []
 pin = 18
-mode = -1
+mode = 0
 
 def main():
     serial_thread = threading.Thread(target = serial_send)
@@ -22,6 +22,7 @@ def main():
     try:
         gpio.setmode(gpio.BCM)
         gpio.setup(pin, gpio.IN, pull_up_down=gpio.PUD_DOWN)
+        on_push(mode)
         while True:
             if not 'event' in locals():
                 event = gpio.add_event_detect(pin, gpio.RISING, callback=on_push, bouncetime=200)
@@ -35,12 +36,10 @@ def main():
 def on_push(channel):
     global mode
     print ("Button Pushed.")
-    if mode < 2:
+    if mode < 3:
         mode += 1
     else:
         mode = 0
-
-#     sleep(1)
 
     # モードに応じて呼び出す
     if mode == 0:
@@ -49,8 +48,11 @@ def on_push(channel):
         thread = threading.Thread(target = get_current_time)
     elif mode == 2:
         thread = threading.Thread(target = COVID19_newly_confirmed_cases_in_tokyo)
+    elif mode == 3:
+        thread = threading.Thread(target = divergence_meter)
     else:
         return
+    
     thread.setDaemon(True)
     thread.start()
 
@@ -80,7 +82,7 @@ def get_current_time():
         current_time.insert(5,"R")
         current_time.insert(8,"\n")
         print(current_time)
-        sleep(0.5)
+        sleep(0.1)
 
 def COVID19_newly_confirmed_cases_in_tokyo():
     global current_time
@@ -99,7 +101,17 @@ def COVID19_newly_confirmed_cases_in_tokyo():
 
     while mode == 2:
         print(current_time)
-        sleep(0.5)
+        sleep(1)
+
+def  divergence_meter():
+    global current_time
+    global mode
+
+    current_time =["1", "R", "0", "4", "8", "5", "9", "6", "\n"]
+
+    while mode == 3:
+        print(current_time)
+        sleep(1)
 
 def serial_send():
     ser = serial.Serial('/dev/ttyAMA0',57600) # 115200
